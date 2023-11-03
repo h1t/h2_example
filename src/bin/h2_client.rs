@@ -109,8 +109,10 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
 
     drop(tx);
     while let Some(res) = rx.recv().await {
-        let duration = res?;
-        stats.add(duration);
+        match res {
+            Ok(duration) => stats.add(duration),
+            Err(e) => println!("There is error in response: {e:?}"),
+        }
     }
 
     stats.print_state();
