@@ -69,7 +69,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                                 lock.times.push(duration);
                             }
                         }
-                        Err(e) => println!("ERROR: {e:?}"),
+                        Err(e) => eprintln!("{e:?}"),
                     }
                 });
             } else {
@@ -94,7 +94,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
                     let tx = tx.clone();
                     tokio::spawn(async move {
                         if (tx.send(socket).await).is_err() {
-                            println!("ERROR: tcp stream recivier dropped");
+                            eprintln!("tcp stream receiver is dropped");
                         }
                     });
                 }
@@ -182,16 +182,16 @@ async fn handle_request(
     let instant = Instant::now();
 
     // NOTE: for test purpose only!!!
-    let millis = rand::thread_rng().gen_range(400..=600);
-    time::sleep(Duration::from_millis(millis)).await;
+    // let millis = rand::thread_rng().gen_range(400..=600);
+    // time::sleep(Duration::from_millis(millis)).await;
 
-    // get data from request
+    // add code to get data from request
     // ...
 
-    // prepare response data
+    // add code to prepare response data
     // ...
 
-    // for tests we use an empty data
+    // NOTE: for tests we use an empty data of response
     let response = Response::builder().status(StatusCode::OK).body(())?;
 
     Ok((response, instant.elapsed()))
