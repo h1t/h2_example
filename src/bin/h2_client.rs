@@ -24,6 +24,10 @@ struct Stat {
 }
 
 impl Stat {
+    fn new() -> Self {
+        Default::default()
+    }
+
     fn add(&mut self, duration: Duration) {
         self.times.push(duration);
     }
@@ -83,7 +87,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
         return Err(AppParamError::NotInRange.into());
     }
 
-    let mut stats: Stat = Default::default();
+    let mut stats = Stat::new();
     let duration = Duration::from_secs(CONNECTION_TIMEOUT);
     let tcp: Result<TcpStream, Box<dyn Error>> =
         match time::timeout(duration, TcpStream::connect(URL)).await {
