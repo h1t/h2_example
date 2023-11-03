@@ -4,6 +4,7 @@ use http::Request;
 use std::{
     error::Error,
     fmt::Display,
+    num::ParseIntError,
     ops::RangeInclusive,
     sync::Arc,
     time::{Duration, Instant},
@@ -48,7 +49,7 @@ impl Stat {
 
 enum AppParamError {
     Missed,
-    NotInteger,
+    NotInteger(ParseIntError),
     NotInRange,
 }
 
@@ -56,7 +57,7 @@ impl Display for AppParamError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Missed => write!(f, "missed requests count param"),
-            Self::NotInteger => write!(f, "requests count param is not integer"),
+            Self::NotInteger(e) => write!(f, "bad format of requests count param: {e}"),
             Self::NotInRange => {
                 write!(
                     f,
@@ -74,6 +75,12 @@ impl std::fmt::Debug for AppParamError {
     }
 }
 
+impl From<ParseIntError> for AppParamError {
+    fn from(value: ParseIntError) -> Self {
+        AppParamError::NotInteger(value)
+    }
+}
+
 impl Error for AppParamError {}
 
 #[tokio::main]
@@ -81,7 +88,7 @@ pub async fn main() -> Result<(), Box<dyn Error>> {
     let request_count = std::env::args()
         .nth(1)
         .ok_or(AppParamError::Missed)
-        .and_then(|str| str.parse::<u64>().map_err(|_| AppParamError::NotInteger))?;
+        .and_then(|str| str.parse::<u64>().map_err(|e| e.into()))?;
 
     if !REQUEST_COUNT_RANGE.contains(&request_count) {
         return Err(AppParamError::NotInRange.into());
