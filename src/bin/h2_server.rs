@@ -26,20 +26,18 @@ struct Stat {
 }
 
 impl Stat {
-    fn print_state(&self) {
+    fn print_state(&self, total: Duration) {
         if !self.times.is_empty() {
-            let (min, max, total) = calc_stat(&self.times);
-            let avg_time = total / self.times.len() as f64;
+            let (min, max, _, avg) = calc_stat(&self.times);
+            // let total = total.as_secs_f64() * 1_000.0;
             println!("Total stat:");
-            println!("  Processed connection count: {}", self.times.len());
-            println!(
-                "  Out of service connection count: {}",
-                self.wait_conn_count
-            );
-            println!("  Max, min, avg connection time in millis: {max:.4} {min:.4} {avg_time:.4}");
+            println!("  Processed requests count: {}", self.times.len());
+            println!("  Out of service requests count: {}", self.wait_conn_count);
+            println!("  Request time in millis(max, min, avg): {max:.4} {min:.4} {avg:.4}");
         } else {
-            println!("There are no connections to the server");
+            println!("There are no requests to the server");
         }
+        println!("Total time is seconds: {:.4}", total.as_secs_f64());
     }
 }
 
@@ -47,10 +45,10 @@ impl Stat {
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let is_running = Arc::new(Mutex::new(true));
     let stats: Arc<Mutex<Stat>> = Default::default();
-
     let listener = TcpListener::bind(URL).await?;
+    let instant = Instant::now();
 
-    println!("listening on {:?}", listener.local_addr());
+    println!("listening on {:?}", listener.local_addr()?);
 
     let (tx, mut rx) = mpsc::channel::<TcpStream>(MAX_CONNECTIONS);
     let is_server_running = Arc::clone(&is_running);
@@ -107,7 +105,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     handle.await?;
 
     let stats = stats.lock().await;
-    stats.print_state();
+    stats.print_state(instant.elapsed());
 
     Ok(())
 }
@@ -142,11 +140,10 @@ async fn serve(socket: TcpStream) -> Result<Duration, Box<dyn Error + Send + Syn
         let lock = times.lock().await;
         if !lock.is_empty() {
             let request_count = lock.len();
-            let (min, max, total) = calc_stat(&lock);
-            let avg_time = total / request_count as f64;
+            let (min, max, _, avg) = calc_stat(&lock);
 
             println!(
-                "Connection stat(count, max, min, avg) in millis: {request_count} {max:.4} {min:.4} {avg_time:.4}"
+                "Request stat in millis(count, max, min, avg): {request_count:3} {max:.4} {min:.4} {avg:.4}"
             );
             lock.iter().sum()
         } else {

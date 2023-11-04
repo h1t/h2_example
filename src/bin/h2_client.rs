@@ -35,11 +35,10 @@ impl Stat {
 
     fn print_state(&self) {
         if !self.times.is_empty() {
-            let (min, max, total) = calc_stat(&self.times);
-            let avg_time = total / self.times.len() as f64;
+            let (min, max, total, avg) = calc_stat(&self.times);
             println!("Total stat:");
-            println!("  Processed request count: {}", self.times.len());
-            println!("  Max, min, avg request time in millis: {max:.4} {min:.4} {avg_time:.4}");
+            println!("  Processed requests count: {}", self.times.len());
+            println!("  Requests time in millis(max, min, avg): {max:.4} {min:.4} {avg:.4}");
             println!("  Total time in millis: {total:.4}");
         } else {
             println!("There are no requests to the server");
