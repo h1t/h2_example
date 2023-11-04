@@ -29,11 +29,13 @@ impl Stat {
     fn print_state(&self, total: Duration) {
         if !self.times.is_empty() {
             let (min, max, _, avg) = calc_stat(&self.times);
-            // let total = total.as_secs_f64() * 1_000.0;
             println!("Total stat:");
-            println!("  Processed requests count: {}", self.times.len());
-            println!("  Out of service requests count: {}", self.wait_conn_count);
-            println!("  Request time in millis(max, min, avg): {max:.4} {min:.4} {avg:.4}");
+            println!("  Number of processed connections: {}", self.times.len());
+            println!(
+                "  Number of out of service connections: {}",
+                self.wait_conn_count
+            );
+            println!("  Connections time in millis(max, min, avg): {max:.4} {min:.4} {avg:.4}");
         } else {
             println!("There are no requests to the server");
         }
@@ -143,7 +145,7 @@ async fn serve(socket: TcpStream) -> Result<Duration, Box<dyn Error + Send + Syn
             let (min, max, _, avg) = calc_stat(&lock);
 
             println!(
-                "Request stat in millis(count, max, min, avg): {request_count:3} {max:.4} {min:.4} {avg:.4}"
+                "Connection stat in millis(count, max, min, avg): {request_count:3} {max:.4} {min:.4} {avg:.4}"
             );
             lock.iter().sum()
         } else {

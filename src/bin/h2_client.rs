@@ -37,7 +37,7 @@ impl Stat {
         if !self.times.is_empty() {
             let (min, max, total, avg) = calc_stat(&self.times);
             println!("Total stat:");
-            println!("  Processed requests count: {}", self.times.len());
+            println!("  Number of processed requests: {}", self.times.len());
             println!("  Requests time in millis(max, min, avg): {max:.4} {min:.4} {avg:.4}");
             println!("  Total time in millis: {total:.4}");
         } else {
