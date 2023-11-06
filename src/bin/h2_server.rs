@@ -45,7 +45,9 @@ impl Stat {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
+    //TODO: check use of Arc<AtomicBool>
     let is_running = Arc::new(Mutex::new(true));
+
     let stats: Arc<Mutex<Stat>> = Default::default();
     let listener = TcpListener::bind(URL).await?;
     let instant = Instant::now();
@@ -105,6 +107,9 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     println!("--------- stop ----------");
 
     handle.await?;
+
+    //TODO: find a way to close properly the port
+    drop(listener);
 
     let stats = stats.lock().await;
     stats.print_state(instant.elapsed());

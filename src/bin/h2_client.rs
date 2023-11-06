@@ -46,6 +46,7 @@ impl Stat {
     }
 }
 
+//TODO: add use of anyhow crate
 enum AppParamError {
     Missed,
     NotInteger(ParseIntError),
